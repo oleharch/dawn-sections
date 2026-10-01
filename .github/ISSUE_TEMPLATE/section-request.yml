@@ -1,0 +1,24 @@
+name: Section request
+description: Ask for a section or snippet that is not in the collection yet.
+title: "Section request: "
+labels: ["section request"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What should the section do?
+      description: Describe the merchant's task, not the implementation. A link to a store that has it helps.
+    validations:
+      required: true
+  - type: input
+    id: theme
+    attributes:
+      label: Theme and version
+      placeholder: Dawn 15.3
+    validations:
+      required: true
+  - type: textarea
+    id: settings
+    attributes:
+      label: Settings the merchant needs to edit
+      placeholder: heading, products, colors...

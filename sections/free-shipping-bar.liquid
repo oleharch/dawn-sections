@@ -1,0 +1,154 @@
+{%- comment -%}
+  Free shipping bar
+  "Add 20.00 for free shipping" with a progress bar. Updates after every cart change.
+  The section re-renders itself through the Section Rendering API, so the amount and the bar are
+  always computed by Liquid from the real cart.
+
+  Files: sections/free-shipping-bar.liquid, snippets/free-shipping-bar.liquid, assets/free-shipping-bar.js
+  Put it in the Header group (shows on every page) or on the cart page.
+  To show it inside Dawn's cart drawer, render the snippet in sections/cart-drawer.liquid (see README).
+
+  Docs: https://shopify.dev/docs/api/ajax/section-rendering
+{%- endcomment -%}
+
+<script src="{{ 'free-shipping-bar.js' | asset_url }}" defer="defer"></script>
+
+{%- liquid
+  assign threshold_cents = section.settings.threshold | times: 100
+-%}
+
+{%- style -%}
+  #free-shipping-bar-{{ section.id }} {
+    --fsb-bg: {{ section.settings.background_color }};
+    --fsb-text: {{ section.settings.text_color }};
+    --fsb-track: {{ section.settings.text_color | color_modify: 'alpha', 0.15 }};
+    --fsb-fill: {{ section.settings.fill_color }};
+    --fsb-fill-reached: {{ section.settings.reached_color }};
+    display: block;
+    background: var(--fsb-bg);
+    color: var(--fsb-text);
+  }
+  #free-shipping-bar-{{ section.id }} .free-shipping-bar {
+    max-width: 60rem;
+    margin: 0 auto;
+    padding: 0.8rem 1.5rem;
+  }
+  #free-shipping-bar-{{ section.id }} .free-shipping-bar[hidden] { display: none; }
+  #free-shipping-bar-{{ section.id }} .free-shipping-bar__text {
+    margin: 0 0 0.6rem;
+    font-size: 1.3rem;
+    line-height: 1.4;
+    text-align: center;
+  }
+  #free-shipping-bar-{{ section.id }} .free-shipping-bar__track {
+    height: 0.6rem;
+    border-radius: 0.3rem;
+    background: var(--fsb-track);
+    overflow: hidden;
+  }
+  #free-shipping-bar-{{ section.id }} .free-shipping-bar__fill {
+    height: 100%;
+    border-radius: inherit;
+    background: var(--fsb-fill);
+    transition: width 0.4s ease;
+  }
+  #free-shipping-bar-{{ section.id }} .free-shipping-bar--reached .free-shipping-bar__fill { background: var(--fsb-fill-reached); }
+{%- endstyle -%}
+
+<free-shipping-bar id="free-shipping-bar-{{ section.id }}" data-section-id="{{ section.id }}">
+  {%- render 'free-shipping-bar',
+    threshold: threshold_cents,
+    goal_text: section.settings.goal_text,
+    reached_text: section.settings.reached_text,
+    hide_when_empty: section.settings.hide_when_empty,
+    hide_foreign_currency: section.settings.hide_foreign_currency,
+    label: section.settings.aria_label
+  -%}
+</free-shipping-bar>
+
+{% schema %}
+{
+  "name": "Free shipping bar",
+  "tag": "section",
+  "class": "section-free-shipping-bar",
+  "limit": 1,
+  "enabled_on": {
+    "groups": ["header", "footer"],
+    "templates": ["cart"]
+  },
+  "settings": [
+    {
+      "type": "number",
+      "id": "threshold",
+      "label": "Free shipping from",
+      "info": "In the store currency, without the symbol: 50 means 50.00. Must match the free shipping rate in Settings > Shipping.",
+      "default": 50
+    },
+    {
+      "type": "text",
+      "id": "goal_text",
+      "label": "Text before the goal",
+      "info": "[amount] is replaced with the remaining amount.",
+      "default": "Add [amount] for free shipping"
+    },
+    {
+      "type": "text",
+      "id": "reached_text",
+      "label": "Text after the goal",
+      "default": "You have free shipping!"
+    },
+    {
+      "type": "text",
+      "id": "aria_label",
+      "label": "Progress bar label (screen readers)",
+      "default": "Free shipping progress"
+    },
+    {
+      "type": "checkbox",
+      "id": "hide_when_empty",
+      "label": "Hide when the cart is empty",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "hide_foreign_currency",
+      "label": "Hide when the cart is in another currency",
+      "info": "The threshold is in the store currency. With Markets, a cart in another currency would compare the wrong numbers.",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background",
+      "default": "#f3f3f3"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text",
+      "default": "#121212"
+    },
+    {
+      "type": "color",
+      "id": "fill_color",
+      "label": "Progress",
+      "default": "#121212"
+    },
+    {
+      "type": "color",
+      "id": "reached_color",
+      "label": "Progress when reached",
+      "default": "#2e7d32"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Free shipping bar"
+    }
+  ]
+}
+{% endschema %}

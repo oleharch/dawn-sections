@@ -1,0 +1,75 @@
+{%- comment -%}
+  Free shipping bar (markup only)
+  Renders the progress bar for the current cart. All math and money formatting happen in Liquid,
+  so the bar is correct on every render, including the theme's own cart drawer re-renders.
+
+  Usage:
+    {% render 'free-shipping-bar',
+      threshold: 5000,                      required, in the store currency, in cents (50.00 -> 5000)
+      goal_text: 'Add [amount] for free shipping',
+      reached_text: 'You have free shipping!',
+      hide_when_empty: true,
+      hide_foreign_currency: true,          hide when the cart is in another currency (Markets)
+      label: 'Free shipping progress'       aria label of the progress bar
+    %}
+
+  Docs:
+  - cart object:   https://shopify.dev/docs/api/liquid/objects/cart
+  - money filters: https://shopify.dev/docs/api/liquid/filters/money
+{%- endcomment -%}
+
+{%- liquid
+  assign threshold = threshold | default: 0 | plus: 0
+  assign goal_text = goal_text | default: 'Add [amount] for free shipping'
+  assign reached_text = reached_text | default: 'You have free shipping!'
+  assign label = label | default: 'Free shipping progress'
+  if hide_when_empty == nil
+    assign hide_when_empty = true
+  endif
+  if hide_foreign_currency == nil
+    assign hide_foreign_currency = true
+  endif
+
+  assign total = cart.total_price
+  assign remaining = threshold | minus: total
+  if threshold > 0
+    assign progress = total | times: 100 | divided_by: threshold | at_most: 100
+  else
+    assign progress = 100
+  endif
+  assign reached = false
+  if remaining <= 0
+    assign reached = true
+  endif
+
+  assign hidden = false
+  if threshold <= 0
+    assign hidden = true
+  endif
+  if hide_when_empty and cart.item_count == 0
+    assign hidden = true
+  endif
+  if hide_foreign_currency and cart.currency.iso_code != shop.currency
+    assign hidden = true
+  endif
+
+  assign amount = remaining | money
+  assign message = goal_text | replace: '[amount]', amount
+  if reached
+    assign message = reached_text
+  endif
+-%}
+
+<div class="free-shipping-bar{% if reached %} free-shipping-bar--reached{% endif %}" data-free-shipping-bar{% if hidden %} hidden{% endif %}>
+  <p class="free-shipping-bar__text" aria-live="polite">{{ message }}</p>
+  <div
+    class="free-shipping-bar__track"
+    role="progressbar"
+    aria-label="{{ label | escape }}"
+    aria-valuemin="0"
+    aria-valuemax="100"
+    aria-valuenow="{{ progress }}"
+  >
+    <div class="free-shipping-bar__fill" style="width: {{ progress }}%"></div>
+  </div>
+</div>

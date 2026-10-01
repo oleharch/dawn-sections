@@ -1,0 +1,41 @@
+name: Bug report
+description: A section does not work as described.
+title: "[section name]: "
+labels: ["bug"]
+body:
+  - type: dropdown
+    id: section
+    attributes:
+      label: Section
+      options:
+        - Age gate
+        - Sticky add to cart
+        - FAQ
+        - Upsell modal
+        - Free shipping bar
+    validations:
+      required: true
+  - type: input
+    id: theme
+    attributes:
+      label: Theme and version
+      placeholder: Dawn 15.3, or the theme name if not Dawn
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected and what happened instead
+    validations:
+      required: true
+  - type: textarea
+    id: console
+    attributes:
+      label: Browser console errors
+      render: text
