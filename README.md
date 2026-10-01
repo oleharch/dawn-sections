@@ -124,6 +124,12 @@ Progress to the free shipping threshold, for the header, the cart page or the ca
 `threshold` is in cents of the store currency (50.00 is `5000`). The styles live in the section file; when you use only the
 snippet, copy the `.free-shipping-bar*` rules into your theme CSS. Keep `display: block` on the fill: Dawn's `div:empty { display: none }` would hide it otherwise.
 
+## See also
+
+[dawn-complete-the-look](https://github.com/oleharch/dawn-complete-the-look): the other kind of upsell. The upsell modal
+here opens *after* a product is added; Complete the look steps in *before*, offers matching products per product from a
+metafield and adds everything in one request.
+
 ## Roadmap
 
 - Store availability per location on the product page
