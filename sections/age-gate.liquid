@@ -1,0 +1,231 @@
+{%- comment -%}
+  Age gate
+  Full-screen confirmation before the store can be browsed (vape, alcohol, CBD, adult products).
+  Remembers the answer in a cookie, sends under-age visitors to an external URL,
+  works on every page when added to the header or footer section group.
+
+  Files: sections/age-gate.liquid, assets/age-gate.js
+  Requires: nothing else. No jQuery, no theme hooks.
+{%- endcomment -%}
+
+<script src="{{ 'age-gate.js' | asset_url }}" defer="defer"></script>
+
+{%- liquid
+  assign cookie_days = section.settings.cookie_days | default: 30
+  assign deny_url = section.settings.deny_url | default: 'https://www.google.com'
+-%}
+
+{%- style -%}
+  #age-gate-{{ section.id }} {
+    --age-gate-overlay: {{ section.settings.overlay_color | color_modify: 'alpha', 0.85 }};
+    --age-gate-bg: {{ section.settings.background_color }};
+    --age-gate-text: {{ section.settings.text_color }};
+    --age-gate-button-bg: {{ section.settings.button_background }};
+    --age-gate-button-text: {{ section.settings.button_text_color }};
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    background: var(--age-gate-overlay);
+    opacity: 0;
+    transition: opacity 0.25s ease;
+  }
+  #age-gate-{{ section.id }}[hidden] { display: none; }
+  #age-gate-{{ section.id }}.age-gate--visible { opacity: 1; }
+  #age-gate-{{ section.id }} .age-gate__dialog {
+    width: 100%;
+    max-width: 44rem;
+    padding: 3.2rem 2.8rem;
+    border-radius: 1.2rem;
+    background: var(--age-gate-bg);
+    color: var(--age-gate-text);
+    text-align: center;
+    box-shadow: 0 2rem 6rem rgba(0, 0, 0, 0.3);
+    transform: translateY(1rem);
+    transition: transform 0.25s ease;
+  }
+  #age-gate-{{ section.id }}.age-gate--visible .age-gate__dialog { transform: none; }
+  #age-gate-{{ section.id }} .age-gate__logo {
+    display: block;
+    width: auto;
+    max-width: 16rem;
+    height: auto;
+    margin: 0 auto 2rem;
+  }
+  #age-gate-{{ section.id }} .age-gate__heading { margin: 0 0 1.2rem; font-size: 2.4rem; line-height: 1.2; }
+  #age-gate-{{ section.id }} .age-gate__text { margin: 0 0 2.4rem; font-size: 1.5rem; line-height: 1.5; }
+  #age-gate-{{ section.id }} .age-gate__text p { margin: 0 0 0.8rem; }
+  #age-gate-{{ section.id }} .age-gate__actions { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; }
+  #age-gate-{{ section.id }} .age-gate__button {
+    min-width: 14rem;
+    padding: 1.2rem 2.4rem;
+    border: 0.1rem solid var(--age-gate-button-bg);
+    border-radius: 0.6rem;
+    background: var(--age-gate-button-bg);
+    color: var(--age-gate-button-text);
+    font: inherit;
+    font-size: 1.5rem;
+    cursor: pointer;
+  }
+  #age-gate-{{ section.id }} .age-gate__button--secondary {
+    background: transparent;
+    color: var(--age-gate-text);
+    border-color: currentColor;
+  }
+  #age-gate-{{ section.id }} .age-gate__button:focus-visible { outline: 0.2rem solid currentColor; outline-offset: 0.3rem; }
+  .age-gate-blur { filter: blur(0.6rem); }
+  .age-gate-lock { overflow: hidden; }
+  @media (max-width: 749px) {
+    #age-gate-{{ section.id }} { padding: 1.5rem; }
+    #age-gate-{{ section.id }} .age-gate__dialog { padding: 2.4rem 2rem; }
+    #age-gate-{{ section.id }} .age-gate__button { flex: 1 1 100%; }
+  }
+{%- endstyle -%}
+
+<age-gate
+  id="age-gate-{{ section.id }}"
+  class="age-gate"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="age-gate-heading-{{ section.id }}"
+  data-cookie-name="age_gate_ok"
+  data-cookie-days="{{ cookie_days }}"
+  data-deny-url="{{ deny_url | escape }}"
+  data-blur="{{ section.settings.blur_background }}"
+  data-design-mode="{{ request.design_mode }}"
+  hidden
+>
+  <div class="age-gate__dialog">
+    {%- if section.settings.logo != blank -%}
+      {{ section.settings.logo | image_url: width: 320 | image_tag: class: 'age-gate__logo', widths: '160, 320', loading: 'eager', alt: shop.name }}
+    {%- endif -%}
+
+    {%- if section.settings.heading != blank -%}
+      <h2 class="age-gate__heading" id="age-gate-heading-{{ section.id }}">{{ section.settings.heading | escape }}</h2>
+    {%- endif -%}
+
+    {%- if section.settings.text != blank -%}
+      <div class="age-gate__text">{{ section.settings.text }}</div>
+    {%- endif -%}
+
+    <div class="age-gate__actions">
+      <button type="button" class="age-gate__button" data-age-gate-confirm>
+        {{ section.settings.confirm_label | default: 'I am over 18' | escape }}
+      </button>
+      <button type="button" class="age-gate__button age-gate__button--secondary" data-age-gate-deny>
+        {{ section.settings.deny_label | default: 'I am under 18' | escape }}
+      </button>
+    </div>
+  </div>
+</age-gate>
+
+{% schema %}
+{
+  "name": "Age gate",
+  "tag": "section",
+  "class": "section-age-gate",
+  "limit": 1,
+  "enabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Shown once per visitor until the cookie expires. In the theme editor it opens when this section is selected."
+    },
+    {
+      "type": "image_picker",
+      "id": "logo",
+      "label": "Logo"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Are you over 18?"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Text",
+      "default": "<p>You must be of legal age to enter this store.</p>"
+    },
+    {
+      "type": "text",
+      "id": "confirm_label",
+      "label": "Confirm button",
+      "default": "Yes, I am over 18"
+    },
+    {
+      "type": "text",
+      "id": "deny_label",
+      "label": "Deny button",
+      "default": "No, I am under 18"
+    },
+    {
+      "type": "url",
+      "id": "deny_url",
+      "label": "Redirect under-age visitors to",
+      "info": "Defaults to google.com when empty."
+    },
+    {
+      "type": "range",
+      "id": "cookie_days",
+      "label": "Remember the answer for",
+      "min": 1,
+      "max": 365,
+      "step": 1,
+      "unit": "d",
+      "default": 30
+    },
+    {
+      "type": "checkbox",
+      "id": "blur_background",
+      "label": "Blur the page behind the dialog",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "overlay_color",
+      "label": "Overlay",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Dialog background",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text",
+      "default": "#121212"
+    },
+    {
+      "type": "color",
+      "id": "button_background",
+      "label": "Button background",
+      "default": "#121212"
+    },
+    {
+      "type": "color",
+      "id": "button_text_color",
+      "label": "Button text",
+      "default": "#ffffff"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Age gate"
+    }
+  ]
+}
+{% endschema %}
