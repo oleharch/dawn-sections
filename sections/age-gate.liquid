@@ -11,7 +11,7 @@
 <script src="{{ 'age-gate.js' | asset_url }}" defer="defer"></script>
 
 {%- liquid
-  assign cookie_days = section.settings.cookie_days | default: 30
+  assign cookie_days = section.settings.cookie_days | default: 30 | at_least: 1 | at_most: 365
   assign deny_url = section.settings.deny_url | default: 'https://www.google.com'
 -%}
 
@@ -172,13 +172,10 @@
       "info": "Defaults to google.com when empty."
     },
     {
-      "type": "range",
+      "type": "number",
       "id": "cookie_days",
-      "label": "Remember the answer for",
-      "min": 1,
-      "max": 365,
-      "step": 1,
-      "unit": "d",
+      "label": "Remember the answer for (days)",
+      "info": "1 to 365.",
       "default": 30
     },
     {

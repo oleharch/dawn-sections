@@ -17,8 +17,9 @@ class StickyAddToCart extends HTMLElement {
     this.form = this.findProductForm();
     if (!this.form) return;
 
-    if (!this.form.id) this.form.id = `product-form-${Date.now()}`;
-    this.button.setAttribute('form', this.form.id);
+    /* `form.id` is shadowed by the <input name="id"> inside the form, so go through attributes. */
+    if (!this.form.getAttribute('id')) this.form.setAttribute('id', `product-form-${Date.now()}`);
+    this.button.setAttribute('form', this.form.getAttribute('id'));
 
     this.observeMainButton();
     this.listenToVariantChanges();
@@ -29,9 +30,20 @@ class StickyAddToCart extends HTMLElement {
     if (this.unsubscribe) this.unsubscribe();
   }
 
+  /*
+   * The main product form: posts to /cart/add, has a variant id and a submit button
+   * (skips Dawn's installments form), is not inside a dialog, quick-add or upsell modal,
+   * and preferably lives in #MainContent.
+   */
   findProductForm() {
-    const forms = Array.from(document.querySelectorAll('form[action*="/cart/add"]'));
-    return forms.find((form) => form.querySelector('input[name="id"]') && !this.contains(form)) || null;
+    const forms = Array.from(document.querySelectorAll('form[action*="/cart/add"]')).filter(
+      (form) =>
+        form.querySelector('input[name="id"]') &&
+        form.querySelector('[type="submit"]') &&
+        !this.contains(form) &&
+        !form.closest('dialog, quick-add-modal, upsell-modal, cart-drawer, cart-notification')
+    );
+    return forms.find((form) => form.closest('#MainContent')) || forms[0] || null;
   }
 
   observeMainButton() {

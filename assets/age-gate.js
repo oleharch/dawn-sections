@@ -87,8 +87,8 @@ class AgeGate extends HTMLElement {
 
   blurTargets() {
     if (!this.blur) return [];
-    return Array.from(document.querySelectorAll('#MainContent, header, footer, .shopify-section-group-footer-group'))
-      .filter((el) => !el.contains(this));
+    const selector = '#MainContent, header, footer, .shopify-section-group-header-group, .shopify-section-group-footer-group';
+    return Array.from(document.querySelectorAll(selector)).filter((el) => !el.contains(this));
   }
 
   hasCookie() {

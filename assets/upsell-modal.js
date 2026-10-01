@@ -163,6 +163,12 @@ class UpsellModal extends HTMLElement {
     if (this.dialog.open) return;
     this.dialog.showModal();
     document.documentElement.style.overflow = 'hidden';
+    /* Dawn opens its cart notification / drawer right after publishing cart-update; one dialog is enough. */
+    setTimeout(() => {
+      document.querySelectorAll('cart-notification, cart-drawer').forEach((el) => {
+        if (typeof el.close === 'function') el.close();
+      });
+    }, 150);
   }
 
   close() {

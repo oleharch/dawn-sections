@@ -47,6 +47,7 @@
     overflow: hidden;
   }
   #free-shipping-bar-{{ section.id }} .free-shipping-bar__fill {
+    display: block; /* Dawn hides empty divs (div:empty { display: none }) */
     height: 100%;
     border-radius: inherit;
     background: var(--fsb-fill);

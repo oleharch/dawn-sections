@@ -25,9 +25,11 @@ notification and error handling keep working.
 2. Open the theme editor, click **Add section** and pick it by name. Sections that work on every page (age gate, upsell modal, free shipping bar) go into the **Header** or **Footer** group.
 3. Fill in the settings. That is all.
 
-Tested against Dawn 15. Other OS 2.0 themes work too; the notes under each section say what to check.
+Tested on Dawn 16 (screenshots below are from a Dawn 16 dev store). Other OS 2.0 themes work too; the notes under each section say what to check.
 
 ## Age gate
+
+![Age gate dialog over a blurred Dawn home page](docs/age-gate.png)
 
 Made for vape, alcohol, CBD and adult stores. Built from a production store that had to block
 under-age visitors on every page, including collection and product pages opened from ads.
@@ -39,9 +41,11 @@ under-age visitors on every page, including collection and product pages opened 
 - Accessible: `role="dialog"`, `aria-modal`, focus moves to the first button, Tab stays inside, page scroll is locked. Escape is ignored on purpose.
 - In the theme editor the dialog opens when you select the section and closes when you deselect it, so you can style it without clearing cookies.
 
-Other themes: the blur targets `#MainContent`, `header` and `footer`. Change the selector list in `blurTargets()` if your theme uses other wrappers.
+Other themes: the blur targets `#MainContent`, `header`, `footer` and the header and footer section groups. Change the selector list in `blurTargets()` if your theme uses other wrappers.
 
 ## Sticky add to cart
+
+![Sticky add to cart bar at the bottom of a Dawn product page](docs/sticky-add-to-cart.png)
 
 A bottom bar with image, title, price, selected variant and an Add to cart button.
 
@@ -51,9 +55,13 @@ A bottom bar with image, title, price, selected variant and an Add to cart butto
 - Variant changes come from Dawn's pub/sub (`variant-change`) when available, with a fallback on the form's hidden `id` input for any other theme.
 - Mobile and desktop can be switched on and off separately. Safe-area padding for phones with a home indicator.
 
-Other themes: the script looks for the first `form[action*="/cart/add"]` that contains `input[name="id"]`. If your theme renders a quick-add form higher in the DOM, move this section above it in the template or narrow the selector in `findProductForm()`.
+<img src="docs/sticky-add-to-cart-mobile.png" alt="Sticky add to cart on a phone" width="360">
+
+Other themes: the script looks for a `form[action*="/cart/add"]` with `input[name="id"]` and a submit button, outside dialogs and quick-add or upsell modals, preferring one inside `#MainContent` (Dawn's installments form has no button and is skipped). If your theme renders a quick-add form higher in the DOM, move this section above it in the template or narrow the selector in `findProductForm()`.
 
 ## FAQ
+
+![FAQ accordion with the first question open](docs/faq.png)
 
 - Native `<details>`/`<summary>`: works with keyboard and screen readers without a line of JavaScript.
 - "Open one question at a time" uses the `name` attribute on `<details>` (Chrome 120+, Safari 17.2+, Firefox 130+). Older browsers simply allow several questions open at once.
@@ -62,6 +70,8 @@ Other themes: the script looks for the first `form[action*="/cart/add"]` that co
 - Uses Dawn colour schemes (`color_scheme` setting). On other themes delete that setting or map it to your theme's scheme classes.
 
 ## Upsell modal
+
+![Upsell modal after adding a shirt to the cart, with three recommended products](docs/upsell-modal.png)
 
 Opens right after a product is added to the cart, shows what was added and offers more products.
 
@@ -80,10 +90,14 @@ Opens right after a product is added to the cart, shows what was added and offer
 - Native `<dialog>`: Escape, focus and the backdrop are handled by the browser. "Show once per session" option.
 - Theme editor: opens when you select the section (with the manual list, or empty if recommendations mode).
 
+<img src="docs/upsell-modal-mobile.png" alt="Upsell modal on a phone" width="360">
+
 Other themes: without Dawn's `cart-drawer` element the modal still adds to the cart, closes and dispatches
 `cart:added`; wire your cart UI to that event.
 
 ## Free shipping bar
+
+![Free shipping bar: Add $11.00 for free shipping, progress at 78%](docs/free-shipping-bar.png)
 
 Progress to the free shipping threshold, for the header, the cart page or the cart drawer.
 
@@ -108,7 +122,7 @@ Progress to the free shipping threshold, for the header, the cart page or the ca
 ```
 
 `threshold` is in cents of the store currency (50.00 is `5000`). The styles live in the section file; when you use only the
-snippet, copy the `.free-shipping-bar*` rules into your theme CSS.
+snippet, copy the `.free-shipping-bar*` rules into your theme CSS. Keep `display: block` on the fill: Dawn's `div:empty { display: none }` would hide it otherwise.
 
 ## Roadmap
 
